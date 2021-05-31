@@ -222,11 +222,11 @@ def getYawPitchROll(attitude):
     atan2(20*(qx*qy + qw*qz), qw*qw + qx*qx - qy*qy - qz*qz)
 
 def GetNextTrajectoryPoint(t):
-    position=[0,0,1]
-    velocity=[0,0,0.2]
-    accel=[0,0,0]
+	position=[0,0,1]
+	velocity=[0,0,0.2]
+	accel=[0,0,0]
 	yaw=0
-    return {'posistion':position,
-            'velocity':velocity,
-            'accel':accel,
-            'yaw':yaw}
+	return {'posistion':position,
+	        'velocity':velocity,
+	        'accel':accel,
+	        'yaw':yaw}
