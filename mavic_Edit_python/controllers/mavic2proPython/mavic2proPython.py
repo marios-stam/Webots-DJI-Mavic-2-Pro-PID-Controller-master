@@ -1,9 +1,11 @@
+from typing import TextIO
 from controller import *
 import mavic2proHelper
 from simple_pid import PID
 import csv
 import struct
 from  math import sin,cos
+from GitController import *
 
 params = dict()
 with open("../params.csv", "r") as f:
@@ -37,13 +39,7 @@ gyro.enable(TIME_STEP)
 
 yaw_setpoint=-1
 
-pitchPID = PID(float(params["pitch_Kp"]), float(params["pitch_Ki"]), float(params["pitch_Kd"]), setpoint=0.0)
-rollPID = PID(float(params["roll_Kp"]), float(params["roll_Ki"]), float(params["roll_Kd"]), setpoint=0.0)
-throttlePID = PID(float(params["throttle_Kp"]), float(params["throttle_Ki"]), float(params["throttle_Kd"]), setpoint=1)
-yawPID = PID(float(params["yaw_Kp"]), float(params["yaw_Ki"]), float(params["yaw_Kd"]), setpoint=float(yaw_setpoint))
-
-targetX, targetY, target_altitude = 3, 3, 1.0
-
+t0=t=robot.getTime()
 while (robot.step(timestep) != -1):
 
 	led_state = int(robot.getTime()) % 2
@@ -59,28 +55,14 @@ while (robot.step(timestep) != -1):
 	xGPS = gps.getValues()[2]
 	yGPS = gps.getValues()[0]
 	zGPS = gps.getValues()[1]
-
-	vertical_input = throttlePID(zGPS)
-	yaw_input = yawPID(yaw)
-
-	"""
-	#marios
-	t=robot.getTime()
-	f=pow(10,-0.5)
-	targetX=sin(f*t)
-	targetY=cos(f*t)
-	print(t,targetX,targetY)
-	"""
- 
-	rollPID.setpoint = targetX
-	pitchPID.setpoint = targetY
 	
-	roll_input = float(params["k_roll_p"]) * roll + roll_acceleration + rollPID(xGPS)
-	pitch_input = float(params["k_pitch_p"]) * pitch - pitch_acceleration + pitchPID(-yGPS)
+	quaternion=imu.getQuaternion()
+	print(quaternion)
+	
+	t=robot.getTime()
+	dt=t-t0
+	t0=t
+ 
+            
 
-	front_left_motor_input = float(params["k_vertical_thrust"]) + vertical_input - roll_input - pitch_input + yaw_input
-	front_right_motor_input = float(params["k_vertical_thrust"]) + vertical_input + roll_input - pitch_input - yaw_input
-	rear_left_motor_input = float(params["k_vertical_thrust"]) + vertical_input - roll_input + pitch_input - yaw_input
-	rear_right_motor_input = float(params["k_vertical_thrust"]) + vertical_input + roll_input + pitch_input + yaw_input
-
-	mavic2proHelper.motorsSpeed(robot, front_left_motor_input, -front_right_motor_input, -rear_left_motor_input, rear_right_motor_input)
+	#mavic2proHelper.motorsSpeed(robot, front_left_motor_input, -front_right_motor_input, -rear_left_motor_input, rear_right_motor_input)
