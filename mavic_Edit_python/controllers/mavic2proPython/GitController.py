@@ -1,6 +1,7 @@
 #from classes import Vector
+from numpy.core.records import array
 from PARAMETERS import *  
-from math import sqrt
+from math import sqrt,atan2,asin
 import numpy as np
 import quaternion
 
@@ -37,22 +38,20 @@ def BodyRateControl(pqrCmd:np.array , pqr:np.array ):
 
 def RollPitchControl(accelCmd:np.array, attitude:np.quaternion, collThrustCmd:float ):
 	pqrCmd=np.array([0,0,0])
-  
-	R = attitude.getRotationMatrix()
 
+	R = getRotationMatrix(attitude)	
 	c = -collThrustCmd / mass
 	b_x = R(0, 2)
 	b_y = R(1, 2)
 	b_x_c = accelCmd[0] / c
 	b_y_c = accelCmd[1] / c
- 	b_x_err = b_x_c - b_x
-   	b_y_err = b_y_c - b_y
- 	b_x_dot_c = kpBank * b_x_err
-   	b_y_dot_c = kpBank * b_y_err
- 	k = 1 / R(2, 2)
-  	pqrCmd[0] = k * (R(1, 0) * b_x_dot_c - R(0, 0) * b_y_dot_c)
-  	pqrCmd[1] = k * (R(1, 1) * b_x_dot_c - R(0, 1) * b_y_dot_c)
-
+	b_x_err = b_x_c - b_x
+	b_y_err = b_y_c - b_y
+	b_x_dot_c = kpBank * b_x_err
+	b_y_dot_c = kpBank * b_y_err
+	k = 1 / R(2, 2)
+	pqrCmd[0] = k * (R(1, 0) * b_x_dot_c - R(0, 0) * b_y_dot_c)
+	pqrCmd[1] = k * (R(1, 1) * b_x_dot_c - R(0, 1) * b_y_dot_c)	
 	return pqrCmd
 
 def BodyRateControl(pqrCmd:np.array,pqr:np.array):
@@ -64,60 +63,18 @@ def BodyRateControl(pqrCmd:np.array,pqr:np.array):
 	//   pqr: current or estimated body rates [rad/s]
 	// OUTPUT:
 	//   return a V3F containing the desired moments for each of the 3 axes	
-	"""
- 
-  	momentCmd=np.array([0,0,0])
-   
+	"""	
+	momentCmd=np.array([0,0,0])	
 	I = np.array([Ixx, Iyy, Izz])
-  	error = pqrCmd - pqr
-  	angularAcc = kpPQR * error
-  	momentCmd = I * angularAcc
-    
-
-  	return momentCmd
-
-def RollPitchControl(accelCmd:np.array, attitude:np.quaternion,collThrustCmd:float):
-	"""
- 	// Calculate a desired pitch and roll angle rates based on a desired global
-	//   lateral acceleration, the current attitude of the quad, and desired
-	//   collective thrust command
-	// INPUTS: 
-	//   accelCmd: desired acceleration in global XY coordinates [m/s2]
-	//   attitude: current or estimated attitude of the vehicle
-	//   collThrustCmd: desired collective thrust of the quad [N]
-	// OUTPUT:
-	//   return a V3F containing the desired pitch and roll rates. The Z
-	//     element of the V3F should be left at its default value (0)	
-	// HINTS: 
-	//  - we already provide rotation matrix R: to get element R[1,2] (python) use R(1,2) (C++)
-	//  - you'll need the roll/pitch gain kpBank
-	//  - collThrustCmd is a force in Newtons! You'll likely want to convert it to acceleration first
-	"""
- 
-	pqrCmd=np.array([0,0,0])
-  	R = attitude.getRotationMatrix()
-
-	
-	c = -collThrustCmd / mass
-	b_x = R(0, 2)
-	b_y = R(1, 2)
-	b_x_c = accelCmd[0] / c
-	b_y_c = accelCmd[1] / c
-	b_x_err = b_x_c - b_x
-	b_y_err = b_y_c - b_y
-	b_x_dot_c = kpBank * b_x_err
-	b_y_dot_c = kpBank * b_y_err
-
-  	k = 1 / R(2, 2)
-  	pqrCmd[0] = k * (R(1, 0) * b_x_dot_c - R(0, 0) * b_y_dot_c)
-  	pqrCmd[1] = k * (R(1, 1) * b_x_dot_c - R(0, 1) * b_y_dot_c)
-
- 	return pqrCmd
+	error = pqrCmd - pqr
+	angularAcc = kpPQR * error
+	momentCmd = I * angularAcc	
+	return momentCmd
 
 
 def AltitudeControl(posZCmd:float,velZCmd:float,posZ:float, velZ:float, attitude:np.quaternion,accelZCmd:float, dt:float):
- 	"""
- 	// Calculate desired quad thrust based on altitude setpoint, actual altitude,
+	"""
+	// Calculate desired quad thrust based on altitude setpoint, actual altitude,
 	//   vertical velocity setpoint, actual vertical velocity, and a vertical 
 	//   acceleration feed-forward command
 	// INPUTS: 
@@ -128,25 +85,23 @@ def AltitudeControl(posZCmd:float,velZCmd:float,posZ:float, velZ:float, attitude
 	// OUTPUT:
 	//   return a collective thrust command in [N]	
 	"""
- 
-  	R = attitude.getRotationMatrix()
-   
+
+	R = getRotationMatrix(attitude)
+
 	thrust = 0
 	z_err = posZCmd - posZ
 	z_dot_err = velZCmd - velZ
-	integratedAltitudeError += z_err * dt
-
- 	net_z_dot_dot = kpPosZ * z_err + kpVelZ * z_dot_err + KiPosZ * integratedAltitudeError
+	integratedAltitudeError += z_err * dt	
+	net_z_dot_dot = kpPosZ * z_err + kpVelZ * z_dot_err + KiPosZ * integratedAltitudeError
 	net_z_dot_dot = CONSTRAIN(net_z_dot_dot, -maxAscentRate / dt, maxDescentRate / dt)
 	u1_bar = net_z_dot_dot - float(CONST_GRAVITY)
 	acc = u1_bar / R(2, 2)
-	thrust = -acc * mass
-
- 	return thrust
+	thrust = -acc * mass	
+	return thrust
 
 def LateralPositionControl(posCmd:np.array,velCmd:np.array, pos:np.array,vel:np.array, accelCmd:np.array):
 	"""
- 	// Calculate a desired horizontal acceleration based on 
+	// Calculate a desired horizontal acceleration based on 
 	//  desired lateral position/velocity/acceleration and current pose
 	// INPUTS: 
 	//   posCmd: desired position, in NED [m]
@@ -164,23 +119,22 @@ def LateralPositionControl(posCmd:np.array,velCmd:np.array, pos:np.array,vel:np.
 	//    to maxSpeedXY and maxAccelXY	
 	// make sure we don't have any incoming z-component
 	"""
- 
+
 	accelCmd[2] = 0
 	velCmd[2] = 0
 	posCmd[2] = pos[2]
-	
+
 	velCmd[0] = CONSTRAIN(velCmd[0], -maxSpeedXY, maxSpeedXY)
 	velCmd[1] = CONSTRAIN(velCmd[1], -maxSpeedXY, maxSpeedXY)
 	posError=(posCmd - pos)
 	velError=(velCmd - vel)
 	kpPos=np.array([ kpPosXY, kpPosXY, 0])
 	kdPos=np.array([kpVelXY, kpVelXY, 0])
- 
+
 	accelCmd = kpPosXY * posError + kdPos * velError + accelCmd
 	accelCmd[0] = CONSTRAIN(accelCmd[0], -maxAccelXY, maxAccelXY)
-	accelCmd[1] = CONSTRAIN(accelCmd[1], -maxAccelXY, maxAccelXY)
-
- 	return accelCmd
+	accelCmd[1] = CONSTRAIN(accelCmd[1], -maxAccelXY, maxAccelXY)	
+	return accelCmd
 
 def YawControl(yawCmd:float ,yaw:float):
 	"""
@@ -196,26 +150,83 @@ def YawControl(yawCmd:float ,yaw:float):
 	"""
 	yawRateCmd=0
 	yaw_err = yawCmd - yaw
-	yawRateCmd = kpYaw * yaw_err
+	yawRateCmd = kpYaw * yaw_err	
+	return yawRateCmd
 
-   	return yawRateCmd
 
+def RunControl(dt:float ,simTime:float ,attitude:np.quaternion,pos:list,vel:list,omega:list):
+	curTrajPoint = GetNextTrajectoryPoint(simTime)	
+	collThrustCmd = AltitudeControl(curTrajPoint['position'][2], curTrajPoint['velocity'], pos[2], vel[2], attitude, curTrajPoint['accel'][2], dt)	
+	#// reserve some thrust margin for angle control
+	thrustMargin = 0.1*(maxMotorThrust - minMotorThrust)
+	collThrustCmd = CONSTRAIN(collThrustCmd, (minMotorThrust+ thrustMargin)*4, (maxMotorThrust-thrustMargin)*4)
+	
+	desAcc = LateralPositionControl(curTrajPoint['position'], curTrajPoint['velocity'], pos, vel, curTrajPoint['accel'])
+	
+	desOmega = RollPitchControl(desAcc, attitude, collThrustCmd)
+	desOmega[2] = YawControl(curTrajPoint['yaw'], getYawPitchROll(attitude)[0])	
+	desMoment = BodyRateControl(desOmega, omega)	
+ 
+	print(desMoment[1])
+	return GenerateMotorCommands(collThrustCmd, desMoment)
 
-def RunControl(dt:float ,simTime:float ,attitude:np.quaternion):
+def getRotationMatrix(quaternion):
+    """
+    Covert a quaternion into a full three-dimensional rotation matrix.
+ 
+    Input
+    :param Q: A 4 element array representing the quaternion (q0,q1,q2,q3) 
+ 
+    Output
+    :return: A 3x3 element matrix representing the full 3D rotation matrix. 
+             This rotation matrix converts a point in the local reference 
+             frame to a point in the global reference frame.
+    """
+    Q=quaternion
+    # Extract the values from Q
+    q0 = Q[0]
+    q1 = Q[1]
+    q2 = Q[2]
+    q3 = Q[3]
+     
+    # First row of the rotation matrix
+    r00 = 2 * (q0 * q0 + q1 * q1) - 1
+    r01 = 2 * (q1 * q2 - q0 * q3)
+    r02 = 2 * (q1 * q3 + q0 * q2)
+     
+    # Second row of the rotation matrix
+    r10 = 2 * (q1 * q2 + q0 * q3)
+    r11 = 2 * (q0 * q0 + q2 * q2) - 1
+    r12 = 2 * (q2 * q3 - q0 * q1)
+     
+    # Third row of the rotation matrix
+    r20 = 2 * (q1 * q3 - q0 * q2)
+    r21 = 2 * (q2 * q3 + q0 * q1)
+    r22 = 2 * (q0 * q0 + q3 * q3) - 1
+     
+    # 3x3 rotation matrix
+    rot_matrix = np.array([[r00, r01, r02],
+                           [r10, r11, r12],
+                           [r20, r21, r22]])
+                            
+    return rot_matrix
+
+def getYawPitchROll(attitude):
+    qx=q[0]
+    qy=q[1]
+    qz=q[2]
+    qw=q[3]
     
-	curTrajPoint = GetNextTrajectoryPoint(simTime)
+    yaw = atan2(2.0*(qy*qz + qw*qx), qw*qw - qx*qx - qy*qy + qz*qz)
+    pitch = asin(-20*(qx*qz - qw*qy))
+    atan2(20*(qx*qy + qw*qz), qw*qw + qx*qx - qy*qy - qz*qz)
 
-  	collThrustCmd = AltitudeControl(curTrajPoint.position[2], curTrajPoint.velocity[2], estPos[2], estVel[2], attitude, curTrajPoint.accel[2], dt)
-
-  	#// reserve some thrust margin for angle control
-  	thrustMargin = 0.1*(maxMotorThrust - minMotorThrust)
-  	collThrustCmd = CONSTRAIN(collThrustCmd, (minMotorThrust+ thrustMargin)*4, (maxMotorThrust-thrustMargin)*4)
-  
-  	desAcc = LateralPositionControl(curTrajPoint.position, curTrajPoint.velocity, estPos, estVel, curTrajPoint.accel)
-  
-  	desOmega = RollPitchControl(desAcc, attitude, collThrustCmd)
-  	desOmega[2] = YawControl(curTrajPoint.attitude.Yaw(), estAtt.Yaw())
-
-  	desMoment = BodyRateControl(desOmega, estOmega)
-
-  	return GenerateMotorCommands(collThrustCmd, desMoment)
+def GetNextTrajectoryPoint(t):
+    position=[0,0,1]
+    velocity=[0,0,0.2]
+    accel=[0,0,0]
+	yaw=0
+    return {'posistion':position,
+            'velocity':velocity,
+            'accel':accel,
+            'yaw':yaw}
