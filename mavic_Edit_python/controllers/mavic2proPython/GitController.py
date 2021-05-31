@@ -226,7 +226,7 @@ def GetNextTrajectoryPoint(t):
 	velocity=[0,0,0.2]
 	accel=[0,0,0]
 	yaw=0
-	return {'posistion':position,
+	return {'position':position,
 	        'velocity':velocity,
 	        'accel':accel,
 	        'yaw':yaw}
