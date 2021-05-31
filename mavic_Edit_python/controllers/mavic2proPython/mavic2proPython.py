@@ -42,7 +42,7 @@ rollPID = PID(float(params["roll_Kp"]), float(params["roll_Ki"]), float(params["
 throttlePID = PID(float(params["throttle_Kp"]), float(params["throttle_Ki"]), float(params["throttle_Kd"]), setpoint=1)
 yawPID = PID(float(params["yaw_Kp"]), float(params["yaw_Ki"]), float(params["yaw_Kd"]), setpoint=float(yaw_setpoint))
 
-targetX, targetY, target_altitude = 1.0, 0.0, 1.0
+targetX, targetY, target_altitude = 3, 3, 1.0
 
 while (robot.step(timestep) != -1):
 
@@ -63,13 +63,15 @@ while (robot.step(timestep) != -1):
 	vertical_input = throttlePID(zGPS)
 	yaw_input = yawPID(yaw)
 
+	"""
 	#marios
 	t=robot.getTime()
 	f=pow(10,-0.5)
 	targetX=sin(f*t)
 	targetY=cos(f*t)
 	print(t,targetX,targetY)
-	
+	"""
+ 
 	rollPID.setpoint = targetX
 	pitchPID.setpoint = targetY
 	
