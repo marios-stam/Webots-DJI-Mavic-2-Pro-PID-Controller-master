@@ -56,13 +56,14 @@ while (robot.step(timestep) != -1):
 	yGPS = gps.getValues()[0]
 	zGPS = gps.getValues()[1]
 	
-	quaternion=imu.getQuaternion()
-	print(quaternion)
-	
+	attitude=imu.getQuaternion()
+	print(attitude)
+
 	t=robot.getTime()
 	dt=t-t0
 	t0=t
- 
-            
 
-	#mavic2proHelper.motorsSpeed(robot, front_left_motor_input, -front_right_motor_input, -rear_left_motor_input, rear_right_motor_input)
+	omega=gyro.getValues()
+	motor_commands=RunControl(dt,t ,attitude,)
+
+	mavic2proHelper.motorsSpeed(robot, motor_commands[0], motor_commands[1], motor_commands[2], motor_commands[3])
