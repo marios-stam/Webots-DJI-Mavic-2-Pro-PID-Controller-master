@@ -4,6 +4,7 @@ from simple_pid import PID
 import csv
 import struct
 from  math import sin,cos
+from SIMPLE_PID_PARAMS import *
 
 params = dict()
 with open("../params.csv", "r") as f:
@@ -11,8 +12,8 @@ with open("../params.csv", "r") as f:
 	for line in lines:
 		params[line[0]] = line[1]
 
-TIME_STEP = int(params["QUADCOPTER_TIME_STEP"])
-TAKEOFF_THRESHOLD_VELOCITY = int(params["TAKEOFF_THRESHOLD_VELOCITY"])
+TIME_STEP = QUADCOPTER_TIME_STEP
+TAKEOFF_THRESHOLD_VELOCITY = TAKEOFF_THRESHOLD_VELOCITY
 M_PI = 3.1415926535897932384626433
 
 robot = Robot()
@@ -37,12 +38,12 @@ gyro.enable(TIME_STEP)
 
 yaw_setpoint=-1
 
-pitchPID = PID(float(params["pitch_Kp"]), float(params["pitch_Ki"]), float(params["pitch_Kd"]), setpoint=0.0)
-rollPID = PID(float(params["roll_Kp"]), float(params["roll_Ki"]), float(params["roll_Kd"]), setpoint=0.0)
-throttlePID = PID(float(params["throttle_Kp"]), float(params["throttle_Ki"]), float(params["throttle_Kd"]), setpoint=1)
-yawPID = PID(float(params["yaw_Kp"]), float(params["yaw_Ki"]), float(params["yaw_Kd"]), setpoint=float(yaw_setpoint))
+pitchPID = PID(pitch_Kp, pitch_Ki, pitch_Kd, setpoint=0.0)
+rollPID = PID(roll_Kp,roll_Ki,roll_Kd, setpoint=0.0)
+throttlePID = PID(throttle_Kp,throttle_Ki,throttle_Kd, setpoint=1)
+yawPID = PID(yaw_Kp,yaw_Ki,yaw_Kd, setpoint=float(yaw_setpoint))
 
-targetX, targetY, target_altitude = 3, 3, 1.0
+targetX, targetY, target_altitude = 1, 1, 1.0
 
 while (robot.step(timestep) != -1):
 
@@ -60,17 +61,21 @@ while (robot.step(timestep) != -1):
 	yGPS = gps.getValues()[0]
 	zGPS = gps.getValues()[1]
 
+	#hardcoded
+	#yaw=-1
+ 
 	vertical_input = throttlePID(zGPS)
 	yaw_input = yawPID(yaw)
 
-	"""
+	
 	#marios
 	t=robot.getTime()
-	f=pow(10,-0.5)
+	f=pow(10,-0.1)
 	targetX=sin(f*t)
 	targetY=cos(f*t)
-	print(t,targetX,targetY)
-	"""
+	#print(t,targetX,targetY)
+	
+
  
 	rollPID.setpoint = targetX
 	pitchPID.setpoint = targetY
@@ -78,9 +83,26 @@ while (robot.step(timestep) != -1):
 	roll_input = float(params["k_roll_p"]) * roll + roll_acceleration + rollPID(xGPS)
 	pitch_input = float(params["k_pitch_p"]) * pitch - pitch_acceleration + pitchPID(-yGPS)
 
-	front_left_motor_input = float(params["k_vertical_thrust"]) + vertical_input - roll_input - pitch_input + yaw_input
-	front_right_motor_input = float(params["k_vertical_thrust"]) + vertical_input + roll_input - pitch_input - yaw_input
-	rear_left_motor_input = float(params["k_vertical_thrust"]) + vertical_input - roll_input + pitch_input - yaw_input
-	rear_right_motor_input = float(params["k_vertical_thrust"]) + vertical_input + roll_input + pitch_input + yaw_input
+	
+	front_left_motor_input  = k_vertical_thrust + vertical_input - roll_input - pitch_input + yaw_input
+	front_right_motor_input = k_vertical_thrust + vertical_input + roll_input - pitch_input - yaw_input
+	rear_left_motor_input   = k_vertical_thrust + vertical_input - roll_input + pitch_input - yaw_input
+	rear_right_motor_input  = k_vertical_thrust + vertical_input + roll_input + pitch_input + yaw_input
 
 	mavic2proHelper.motorsSpeed(robot, front_left_motor_input, -front_right_motor_input, -rear_left_motor_input, rear_right_motor_input)
+ 
+	"""
+	front_left_motor_input  = k_vertical_thrust + vertical_input - roll_input + pitch_input - yaw_input
+	front_right_motor_input = k_vertical_thrust + vertical_input + roll_input + pitch_input + yaw_input
+	rear_left_motor_input   = k_vertical_thrust + vertical_input - roll_input - pitch_input + yaw_input
+	rear_right_motor_input  = k_vertical_thrust + vertical_input + roll_input - pitch_input - yaw_input
+	mavic2proHelper.motorsSpeed(robot, front_left_motor_input, -front_right_motor_input, -rear_left_motor_input, rear_right_motor_input)
+	"""
+	print(k_vertical_thrust)
+	print(front_left_motor_input)
+	print(front_right_motor_input)
+	print(rear_left_motor_input)
+	print(rear_right_motor_input)
+	
+
+	
