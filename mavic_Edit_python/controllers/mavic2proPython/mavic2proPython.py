@@ -90,19 +90,6 @@ while (robot.step(timestep) != -1):
 	rear_right_motor_input  = k_vertical_thrust + vertical_input + roll_input + pitch_input + yaw_input
 
 	mavic2proHelper.motorsSpeed(robot, front_left_motor_input, -front_right_motor_input, -rear_left_motor_input, rear_right_motor_input)
- 
-	"""
-	front_left_motor_input  = k_vertical_thrust + vertical_input - roll_input + pitch_input - yaw_input
-	front_right_motor_input = k_vertical_thrust + vertical_input + roll_input + pitch_input + yaw_input
-	rear_left_motor_input   = k_vertical_thrust + vertical_input - roll_input - pitch_input + yaw_input
-	rear_right_motor_input  = k_vertical_thrust + vertical_input + roll_input - pitch_input - yaw_input
-	mavic2proHelper.motorsSpeed(robot, front_left_motor_input, -front_right_motor_input, -rear_left_motor_input, rear_right_motor_input)
-	"""
-	print(k_vertical_thrust)
-	print(front_left_motor_input)
-	print(front_right_motor_input)
-	print(rear_left_motor_input)
-	print(rear_right_motor_input)
 	
 
 	
