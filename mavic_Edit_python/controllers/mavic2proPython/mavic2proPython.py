@@ -5,6 +5,8 @@ import csv
 import struct
 from  math import sin,cos
 from SIMPLE_PID_PARAMS import *
+k_roll_p =10
+k_pitch_p=10
 
 params = dict()
 with open("../params.csv", "r") as f:
@@ -44,7 +46,7 @@ throttlePID = PID(throttle_Kp,throttle_Ki,throttle_Kd, setpoint=1)
 yawPID = PID(yaw_Kp,yaw_Ki,yaw_Kd, setpoint=float(yaw_setpoint))
 
 targetX, targetY, target_altitude = 1, 1, 1.0
-
+print("testaki")
 while (robot.step(timestep) != -1):
 
 	led_state = int(robot.getTime()) % 2
@@ -63,20 +65,20 @@ while (robot.step(timestep) != -1):
 
 	#hardcoded
 	#yaw=-1
-	yawPID.setpoint=-0.9
+	
 	
 	vertical_input = throttlePID(zGPS)
-	yaw_input = (yaw)
+	yaw_input = yawPID(yaw)
 
 	
 	#marios
 	t=robot.getTime()
 	f=pow(10,-0.1)
-	targetX=sin(f*t)
-	targetY=cos(f*t)
-	
-	targetX=0
-	targetY=0
+	# targetX=sin(f*t)
+	# targetY=cos(f*t)
+
+	targetX=1
+	targetY=1
 
 	print(t,targetX,targetY)
 	
