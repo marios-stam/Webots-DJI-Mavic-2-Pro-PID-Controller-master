@@ -13,7 +13,7 @@ with open("../params.csv", "r") as f:
 		params[line[0]] = line[1]
 
 TIME_STEP = QUADCOPTER_TIME_STEP
-TAKEOFF_THRESHOLD_VELOCITY = TAKEOFF_THRESHOLD_VELOCITY
+TAKEOFF_THRESHOLD_VELOCITY = int(params["TAKEOFF_THRESHOLD_VELOCITY"])
 M_PI = 3.1415926535897932384626433
 
 robot = Robot()
@@ -63,9 +63,10 @@ while (robot.step(timestep) != -1):
 
 	#hardcoded
 	#yaw=-1
- 
+	yawPID.setpoint=-0.9
+	
 	vertical_input = throttlePID(zGPS)
-	yaw_input = yawPID(yaw)
+	yaw_input = (yaw)
 
 	
 	#marios
@@ -73,23 +74,23 @@ while (robot.step(timestep) != -1):
 	f=pow(10,-0.1)
 	targetX=sin(f*t)
 	targetY=cos(f*t)
-	#print(t,targetX,targetY)
+	
+	targetX=0
+	targetY=0
+
+	print(t,targetX,targetY)
 	
 
  
 	rollPID.setpoint = targetX
 	pitchPID.setpoint = targetY
 	
-	roll_input = float(params["k_roll_p"]) * roll + roll_acceleration + rollPID(xGPS)
-	pitch_input = float(params["k_pitch_p"]) * pitch - pitch_acceleration + pitchPID(-yGPS)
-
+	roll_input  = k_roll_p  * roll + roll_acceleration + rollPID(xGPS)
+	pitch_input = k_pitch_p * pitch - pitch_acceleration + pitchPID(-yGPS)
 	
 	front_left_motor_input  = k_vertical_thrust + vertical_input - roll_input - pitch_input + yaw_input
 	front_right_motor_input = k_vertical_thrust + vertical_input + roll_input - pitch_input - yaw_input
 	rear_left_motor_input   = k_vertical_thrust + vertical_input - roll_input + pitch_input - yaw_input
-	rear_right_motor_input  = k_vertical_thrust + vertical_input + roll_input + pitch_input + yaw_input
-
+	rear_right_motor_input  = k_vertical_thrust + vertical_input + roll_input + pitch_input + yaw_input	
+	
 	mavic2proHelper.motorsSpeed(robot, front_left_motor_input, -front_right_motor_input, -rear_left_motor_input, rear_right_motor_input)
-	
-
-	

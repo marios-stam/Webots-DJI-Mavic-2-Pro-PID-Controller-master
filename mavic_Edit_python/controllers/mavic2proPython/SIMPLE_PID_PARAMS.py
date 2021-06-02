@@ -26,7 +26,7 @@ throttle_Ki=0.1
 throttle_Kd=5
 
 yaw_Kp=2
-yaw_Ki=0.5
+yaw_Ki=0
 yaw_Kd=8
 
 yaw_setpoint=-0.99
