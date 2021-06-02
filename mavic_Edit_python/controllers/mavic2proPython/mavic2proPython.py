@@ -8,6 +8,8 @@ from SIMPLE_PID_PARAMS import *
 k_roll_p =10
 k_pitch_p=10
 
+from helping_functions import frames
+
 params = dict()
 with open("../params.csv", "r") as f:
 	lines = csv.reader(f)
@@ -46,6 +48,7 @@ throttlePID = PID(throttle_Kp,throttle_Ki,throttle_Kd, setpoint=1)
 yawPID = PID(yaw_Kp,yaw_Ki,yaw_Kd, setpoint=float(yaw_setpoint))
 
 targetX, targetY, target_altitude = 1, 1, 1.0
+targetXWorld, targetYWorld = 1, 1
 print("testaki")
 while (robot.step(timestep) != -1):
 
@@ -64,26 +67,29 @@ while (robot.step(timestep) != -1):
 	zGPS = gps.getValues()[1]
 
 	#hardcoded
-	#yaw=-1
-	
+	#yaw=-1	
+	yawIMU = imu.getRollPitchYaw()[2]
+	print("yawIMU",yawIMU)
+
+	newCoords=frames.world2body( (targetXWorld,targetYWorld),(zGPS,xGPS) ,float(yawIMU)) 
+	print( (targetXWorld,targetYWorld),(xGPS,yGPS) ,float(yawIMU))
+	print(newCoords[0,0],newCoords[1,0])
 	
 	vertical_input = throttlePID(zGPS)
-	yaw_input = yawPID(yaw)
-
+	yaw_input = yawPID(yaw)	
 	
 	#marios
 	t=robot.getTime()
 	f=pow(10,-0.1)
 	# targetX=sin(f*t)
-	# targetY=cos(f*t)
+	# targetY=cos(f*t)	
+	targetX=newCoords[0,0]
+	targetY=newCoords[1,0]
 
-	targetX=1
-	targetY=1
-
-	print(t,targetX,targetY)
+	# print(t,targetX,targetY)
 	
 
- 
+	
 	rollPID.setpoint = targetX
 	pitchPID.setpoint = targetY
 	
