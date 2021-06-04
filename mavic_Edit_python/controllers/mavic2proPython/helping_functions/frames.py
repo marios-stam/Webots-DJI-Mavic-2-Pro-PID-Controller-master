@@ -1,4 +1,4 @@
-from math import sin,cos
+from math import sin, cos, pi
 import numpy as np
 def body2world(xb,yb,theta):
     R=np.array([
@@ -40,7 +40,17 @@ def world2body(worldCoords,robotCoords,theta):
 
     return np.matmul(R_inv, world)[:2]
 
-
+def IMUangle2world(IMUangle):
+    """
+    INPUT:
+    IMUangle   :yaw angle given by IMU
+      
+    OUTPUT: 
+    worldAngle :yaw angle at world frame 
+    """
+    worldAngle=IMUangle+ pi/2
+    return worldAngle
+    
 xw,yw=1,1
 theta=3.14
 print(world2body( (xw,yw),(0,0) ,theta))

@@ -1,14 +1,19 @@
+from numpy import sign
 from controller import *
 import mavic2proHelper
 from simple_pid import PID
 import csv
 import struct
-from  math import sin,cos
+from  math import sin,cos,pi
 from SIMPLE_PID_PARAMS import *
+
+from helping_functions import frames
+from helping_functions import yawFix
+
 k_roll_p =10
 k_pitch_p=10
 
-from helping_functions import frames
+
 
 params = dict()
 with open("../params.csv", "r") as f:
@@ -40,15 +45,15 @@ compass.enable(TIME_STEP)
 gyro = Gyro("gyro")
 gyro.enable(TIME_STEP)
 
-yaw_setpoint=-1
-
+# yaw_setpoint=-1
+# yaw_setpoint=1
 pitchPID = PID(pitch_Kp, pitch_Ki, pitch_Kd, setpoint=0.0)
 rollPID = PID(roll_Kp,roll_Ki,roll_Kd, setpoint=0.0)
 throttlePID = PID(throttle_Kp,throttle_Ki,throttle_Kd, setpoint=1)
 yawPID = PID(yaw_Kp,yaw_Ki,yaw_Kd, setpoint=float(yaw_setpoint))
 
-targetX, targetY, target_altitude = 1, 1, 1.0
-targetXWorld, targetYWorld = 1, 1
+targetX, targetY, target_altitude = 0.0	, 0.0, 1.0
+targetXWorld, targetYWorld = 1.0, 0.5
 print("testaki")
 while (robot.step(timestep) != -1):
 
@@ -61,44 +66,53 @@ while (robot.step(timestep) != -1):
 	yaw = compass.getValues()[0]
 	roll_acceleration = gyro.getValues()[0]
 	pitch_acceleration = gyro.getValues()[1]
+
+	yaw_speed= gyro.getValues()[2]
 	
+ 
 	xGPS = gps.getValues()[2]
 	yGPS = gps.getValues()[0]
 	zGPS = gps.getValues()[1]
 
 	#hardcoded
-	#yaw=-1	
+	# yaw=-1
 	yawIMU = imu.getRollPitchYaw()[2]
-	print("yawIMU",yawIMU)
+	# print("yawIMU",yawIMU)
+	# yaw=frames.IMUangle2world(float(yawIMU))/(2*pi)
+	newCoords=frames.world2body( (targetXWorld,targetYWorld),(xGPS,yGPS) ,frames.IMUangle2world(float(yawIMU)) )
+	print( "xGps:",xGPS," yGps:",yGPS," zGps:",zGPS )
+	# print("IMU:",float(yawIMU)/pi,"-->",frames.IMUangle2world(float(yawIMU))/pi )
+	# print("newCoords[0]:",newCoords[0,0]," newCoords[1]:",newCoords[1,0])
 
-	newCoords=frames.world2body( (targetXWorld,targetYWorld),(zGPS,xGPS) ,float(yawIMU)) 
-	print( (targetXWorld,targetYWorld),(xGPS,yGPS) ,float(yawIMU))
-	print(newCoords[0,0],newCoords[1,0])
-	
+	throttlePID.setpoint=target_altitude
 	vertical_input = throttlePID(zGPS)
-	yaw_input = yawPID(yaw)	
+	yaw_input = yawPID(yaw)
 	
+	print("angular vel:",yaw_speed)
+	print("yaw fixed:",yawFix.fixYaw(compass.getValues()[0],yaw_speed))
+	print("yaw:",compass.getValues()[0],"yaw_IMU:",float(yawIMU)/pi)
+	# print("yaw_error:",yawPID.setpoint-yaw)
+	# print("yaw_input:",yaw_input)
+	print("======================================================================")
 	#marios
 	t=robot.getTime()
 	f=pow(10,-0.1)
 	# targetX=sin(f*t)
-	# targetY=cos(f*t)	
-	targetX=newCoords[0,0]
-	targetY=newCoords[1,0]
+	# targetY=cos(f*t)
+	targetX=newCoords[1,0]
+	targetY=newCoords[0,0]
 
-	# print(t,targetX,targetY)
-	
-
-	
-	rollPID.setpoint = targetX
+	rollPID.setpoint  = targetX
 	pitchPID.setpoint = targetY
-	
-	roll_input  = k_roll_p  * roll + roll_acceleration + rollPID(xGPS)
-	pitch_input = k_pitch_p * pitch - pitch_acceleration + pitchPID(-yGPS)
-	
+ 
+	# roll_input  = k_roll_p  * roll + roll_acceleration + rollPID(xGPS)
+	# pitch_input = k_pitch_p * pitch - pitch_acceleration + pitchPID(-yGPS)
+	roll_input  = k_roll_p  * roll + roll_acceleration + rollPID(0)
+	pitch_input = k_pitch_p * pitch - pitch_acceleration + pitchPID(0)
+
 	front_left_motor_input  = k_vertical_thrust + vertical_input - roll_input - pitch_input + yaw_input
 	front_right_motor_input = k_vertical_thrust + vertical_input + roll_input - pitch_input - yaw_input
 	rear_left_motor_input   = k_vertical_thrust + vertical_input - roll_input + pitch_input - yaw_input
-	rear_right_motor_input  = k_vertical_thrust + vertical_input + roll_input + pitch_input + yaw_input	
-	
+	rear_right_motor_input  = k_vertical_thrust + vertical_input + roll_input + pitch_input + yaw_input
+
 	mavic2proHelper.motorsSpeed(robot, front_left_motor_input, -front_right_motor_input, -rear_left_motor_input, rear_right_motor_input)
