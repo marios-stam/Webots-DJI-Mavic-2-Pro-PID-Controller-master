@@ -26,7 +26,8 @@ throttle_Ki=float(0.1)
 throttle_Kd=float(5)
 
 yaw_Kp=float(2)
-yaw_Ki=float(0.01)
+# yaw_Ki=float(0.01)
+yaw_Ki=float(0)
 yaw_Kd=float(5)
 
 yaw_setpoint=float(-0.99)

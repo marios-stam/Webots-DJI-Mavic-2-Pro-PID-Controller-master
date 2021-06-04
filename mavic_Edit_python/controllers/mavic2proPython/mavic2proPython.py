@@ -15,14 +15,8 @@ k_pitch_p=10
 
 
 
-params = dict()
-with open("../params.csv", "r") as f:
-	lines = csv.reader(f)
-	for line in lines:
-		params[line[0]] = line[1]
-
 TIME_STEP = QUADCOPTER_TIME_STEP
-TAKEOFF_THRESHOLD_VELOCITY = int(params["TAKEOFF_THRESHOLD_VELOCITY"])
+TAKEOFF_THRESHOLD_VELOCITY = TAKEOFF_THRESHOLD_VELOCITY
 M_PI = 3.1415926535897932384626433
 
 robot = Robot()
@@ -45,7 +39,7 @@ compass.enable(TIME_STEP)
 gyro = Gyro("gyro")
 gyro.enable(TIME_STEP)
 
-# yaw_setpoint=-1
+yaw_setpoint=-1
 # yaw_setpoint=1
 pitchPID = PID(pitch_Kp, pitch_Ki, pitch_Kd, setpoint=0.0)
 rollPID = PID(roll_Kp,roll_Ki,roll_Kd, setpoint=0.0)
@@ -84,15 +78,18 @@ while (robot.step(timestep) != -1):
 	# print("IMU:",float(yawIMU)/pi,"-->",frames.IMUangle2world(float(yawIMU))/pi )
 	# print("newCoords[0]:",newCoords[0,0]," newCoords[1]:",newCoords[1,0])
 
+	yaw_fixed=yawFix.fixYaw(yaw,yawIMU,yaw_speed)
+	
 	throttlePID.setpoint=target_altitude
+	
 	vertical_input = throttlePID(zGPS)
-	yaw_input = yawPID(yaw)
+	yaw_input = yawPID(yaw_fixed)
 	
 	print("angular vel:",yaw_speed)
-	print("yaw fixed:",yawFix.fixYaw(compass.getValues()[0],yaw_speed))
+	print("yaw fixed:",yaw_fixed)
 	print("yaw:",compass.getValues()[0],"yaw_IMU:",float(yawIMU)/pi)
 	# print("yaw_error:",yawPID.setpoint-yaw)
-	# print("yaw_input:",yaw_input)
+	print("yaw_input:",yaw_input)
 	print("======================================================================")
 	#marios
 	t=robot.getTime()

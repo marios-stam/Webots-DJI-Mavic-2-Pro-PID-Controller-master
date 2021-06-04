@@ -1,46 +1,39 @@
 from math import pi
 from numpy import sign
+import time
 dx=0
-def fixYaw(angle,vel):
+def fixYaw(angle,angleIMU,vel):
     global dx
-    print("dx:",dx)
+   
+    
     val_to_add=0
     modification=0
-    if (sign(fixYaw.old_angle)!=sign(angle)):#if there is zero crossing
-        if(angle>0):
-            if( vel>0):
-                print("thetiki gonia - dx>0")
-                fixYaw.PiSign=0
-                fixYaw.AngleSign=1
-                val_to_add=pi       
-            else:
-                print("thetiki gonia - dx<0")
-                fixYaw.PiSign=1
-                fixYaw.AngleSign=1
-                val_to_add=-pi
-        else:
-            if( vel>0):
-                print("arnitiki gonia - dx>0")
-                val_to_add=pi
-                fixYaw.PiSign=1
-                fixYaw.AngleSign=-1        
-            else:
-                print("arnitiki gonia - dx<0")
-                val_to_add=-pi
-                fixYaw.PiSign=0
-                fixYaw.AngleSign=1
-            
-    fixYaw.yaw=fixYaw.yaw+val_to_add
-    fixYaw.old_angle=angle
-    dx=angle-fixYaw.old_angle
+    if (sign(fixYaw.old_angle)!=sign(angleIMU)):#if there is zero crossing
+        if (angleIMU<0):
+            if(vel>0):
+                time.sleep(2)
+                fixYaw.stathera=-2
+                fixYaw.angleConstant=-1
+        else: # angleIMU>0
+            if(vel<0):
+                time.sleep(6)
+                fixYaw.stathera=0 
+                fixYaw.angleConstant=1
+                
+    dx=angleIMU-fixYaw.old_angle
+    fixYaw.old_angle=angleIMU
+    print("dx:",dx)
+    return fixYaw.stathera + fixYaw.angleConstant*angle
 
-    return fixYaw.yaw + fixYaw.PiSign*pi + fixYaw.AngleSign*angle
     
+
+        
 fixYaw.yaw=0
-fixYaw.old_angle=0
-fixYaw.dx=0
-fixYaw.PiSign=0
-fixYaw.AngleSign=1
+fixYaw.old_angle=1
+fixYaw.stathera=0 #sintelestis statheras
+fixYaw.angleConstant=1 #sintelestis gonias
+
+
 
 def yawSignChange(angle):
     if (sign(yawSignChange.old_angle)!=sign(angle)):
