@@ -17,8 +17,8 @@ pitch_Kp=float(2)
 pitch_Ki=float(0.1)
 pitch_Kd=float(2)
 
-roll_Kp=float(3)
-roll_Ki=float(0.2)
+roll_Kp=float(2.2)
+roll_Ki=float(0)
 roll_Kd=float(2)
 
 throttle_Kp=float(10)
