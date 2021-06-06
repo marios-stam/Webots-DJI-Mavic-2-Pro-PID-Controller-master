@@ -1,33 +1,37 @@
-QUADCOPTER_TIME_STEP=8
+QUADCOPTER_TIME_STEP=int(8)
+ROVER_TIME_STEP=float(64)
 
-#TAKEOFF_THRESHOLD_VELOCITY=160
-TAKEOFF_THRESHOLD_VELOCITY=160
-floor_width=70
-#k_vertical_thrust=70
-k_vertical_thrust=65
-floor_height=42.4
+TAKEOFF_THRESHOLD_VELOCITY=float(160)
 
-k_roll_p=10 
-waypoint_reached_tolerance=0.1
-k_pitch_p=-10
+floor_width=float(70)
+k_vertical_thrust=float(68.5)
+floor_height=float(42.4)
 
-target_altitude=1
+k_roll_p=float(10) 
+waypoint_reached_tolerance=float(0.1)
+k_pitch_p=float(-10)
 
-pitch_Kp=2
-pitch_Ki=0.1
-pitch_Kd=2
+target_altitude=float(1)
 
-roll_Kp=2
-roll_Ki=0.1
-roll_Kd=2
+pitch_Kp=float(2)
+pitch_Ki=float(0.1)
+pitch_Kd=float(2)
 
-throttle_Kp=10
-throttle_Ki=0.1
-throttle_Kd=5
+roll_Kp=float(2.2)
+roll_Ki=float(0)
+roll_Kd=float(2)
 
-yaw_Kp=2
-yaw_Ki=0
-yaw_Kd=8
+throttle_Kp=float(10)
+throttle_Ki=float(0.1)
+throttle_Kd=float(5)
 
-yaw_setpoint=-0.99
-altitude_attainment_factor=0.8
+yaw_Kp=float(2)
+# yaw_Ki=float(0.01)
+yaw_Ki=float(0)
+yaw_Kd=float(5)
+
+yaw_setpoint=float(-0.99)
+altitude_attainment_factor=float(0.8)
+
+# LOGGING TRAJECTORY
+LOGGING_TIME_INTERVAL=0.2 #SECS

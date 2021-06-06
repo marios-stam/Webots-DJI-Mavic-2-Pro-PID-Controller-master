@@ -1,0 +1,307 @@
+#VRML_SIM R2021a utf8
+WorldInfo {
+  info [
+    "This demonstration shows a DJI Mavic 2 PRO flying over a rural area."
+    "After the drone has taken off, you can control it with the keyboard of your computer."
+  ]
+  title "DJI Mavic 2 PRO demo"
+  basicTimeStep 8
+  defaultDamping Damping {
+    linear 0.5
+    angular 0.5
+  }
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation -0.4050978470380427 0.837450860008539 0.36684028049834033 1.6265286905840761
+  position 37.72242199193912 8.256744256527657 1.7966172431032879
+  near 0.2
+  followSmoothness 0.2
+}
+TexturedBackground {
+  luminosity 3
+}
+TexturedBackgroundLight {
+}
+Floor {
+  size 400 400
+  tileSize 6 6
+  appearance SandyGround {
+  }
+}
+DEF WEBOTS_VEHICLE0 LincolnMKZ {
+  translation 27 0.399372 2
+  rotation -6.08975e-20 1 6.08986e-20 -1.5707953071795862
+  name "vehicle(1)"
+  controller "highway_driving"
+  sensorsSlotFront [
+    DEF FRONT DistanceSensor {
+      translation 0 0.3 -0.05
+      rotation 0 1 0 4.712389
+      name "distance sensor front"
+      lookupTable [
+        0 0 0
+        20 20 0
+      ]
+      numberOfRays 2
+      aperture 0.1
+    }
+    DEF FRONT_RIGHT_0 DistanceSensor {
+      translation -0.68 0.3 -0.03
+      rotation 0 1 0 4.5814897
+      name "distance sensor front right 0"
+      lookupTable [
+        0 0 0
+        20 20 0
+      ]
+      numberOfRays 2
+      aperture 0.1
+    }
+    DEF FRONT_RIGHT_1 DistanceSensor {
+      translation -0.709 0.3 -0.05
+      rotation 0 1 0 4.4505903
+      name "distance sensor front right 1"
+      lookupTable [
+        0 0 0
+        15 15 0
+      ]
+      numberOfRays 2
+      aperture 0.1
+    }
+    DEF FRONT_RIGHT_2 DistanceSensor {
+      translation -0.75 0.3 -0.03
+      rotation 0 1 0 4.3196903
+      name "distance sensor front right 2"
+      lookupTable [
+        0 0 0
+        10 10 0
+      ]
+      numberOfRays 2
+      aperture 0.1
+    }
+    DEF FRONT_LEFT_0 DistanceSensor {
+      translation 0.685 0.3 -0.04
+      rotation 0 1 0 4.8432897
+      name "distance sensor front left 0"
+      lookupTable [
+        0 0 0
+        20 20 0
+      ]
+      numberOfRays 2
+      aperture 0.1
+    }
+    DEF FRONT_LEFT_1 DistanceSensor {
+      translation 0.72 0.3 -0.02
+      rotation 0 1 0 4.9741897
+      name "distance sensor front left 1"
+      lookupTable [
+        0 0 0
+        15 15 0
+      ]
+      numberOfRays 2
+      aperture 0.1
+    }
+    DEF FRONT_LEFT_2 DistanceSensor {
+      translation 0.757 0.3 -0.03
+      rotation 0 1 0 5.1050897
+      name "distance sensor front left 2"
+      lookupTable [
+        0 0 0
+        10 10 0
+      ]
+      numberOfRays 2
+      aperture 0.1
+    }
+  ]
+  sensorsSlotRear [
+    DEF REAR DistanceSensor {
+      translation 0 0.3 0
+      rotation 0 1 0 4.712389
+      name "distance sensor rear"
+      lookupTable [
+        0 0 0
+        10 10 0
+      ]
+      numberOfRays 2
+      aperture 0.2
+    }
+    DEF REAR_LEFT DistanceSensor {
+      translation -0.775 0.3 -0.06
+      rotation 0 1 0 4.1887902
+      name "distance sensor rear left"
+      lookupTable [
+        0 0 0
+        10 10 0
+      ]
+      numberOfRays 2
+      aperture 0.2
+    }
+    DEF REAR_RIGHT DistanceSensor {
+      translation 0.78 0.3 -0.06
+      rotation 0 -1 0 1.0471975
+      name "distance sensor rear right"
+      lookupTable [
+        0 0 0
+        10 10 0
+      ]
+      numberOfRays 2
+      aperture 0.2
+    }
+  ]
+  sensorsSlotTop [
+    DEF TOP_CAMERA Camera {
+      translation 0 0 -0.48
+      width 256
+      height 128
+      near 1
+      far 350
+      motionBlur 200
+      recognition Recognition {
+      }
+      lensFlare LensFlare {
+      }
+    }
+  ]
+  sensorsSlotCenter [
+    SpotLight {
+      attenuation 0 0 1
+      beamWidth 0.2
+      cutOffAngle 0.7
+      direction 0.6 -1 0
+      intensity 17
+      location -4 5.5 0
+      radius 20
+      castShadows TRUE
+    }
+    DEF RIGHT DistanceSensor {
+      translation 0.95 0.3 -1.32
+      name "distance sensor right"
+      lookupTable [
+        0 0 0
+        10 10 0
+      ]
+      numberOfRays 2
+      aperture 0.9
+    }
+    DEF LEFT DistanceSensor {
+      translation -0.95 0.3 -1.32
+      rotation 0 1 0 3.1415926
+      name "distance sensor left"
+      lookupTable [
+        0 0 0
+        10 10 0
+      ]
+      numberOfRays 2
+      aperture 0.9
+    }
+    GPS {
+      translation 0 0 -5.03
+    }
+  ]
+}
+Road {
+  translation -43.8 0.01 -9.2
+  rotation 0 1 0 1.1781
+  width 3
+  numberOfLanes 1
+  rightBorder FALSE
+  leftBorder FALSE
+  wayPoints [
+    0 0 0
+    0 0 100
+    200 0 200
+  ]
+  splineSubdivision 8
+  appearance SquarePavement {
+  }
+}
+Windmill {
+  translation -43.8656 0 19.8433
+  rotation 0 1 0 -1.0472
+}
+Windmill {
+  translation -44.258 0 27.3356
+  rotation 0 1 0 -1.0472
+  name "windmill(1)"
+}
+Windmill {
+  translation -46.2448 0 -30.573
+  rotation 0 1 0 -1.0472
+  name "windmill(2)"
+}
+Windmill {
+  translation -38.75 0 -23.4
+  rotation 0 1 0 -1.5708
+  name "windmill(3)"
+}
+SmallManor {
+  translation -50.35 0 -11.25
+  rotation 0 1 0 4.32
+}
+SquareManhole {
+  translation 29.09 -0.03 2
+}
+TeslaModel3Simple {
+  translation -41.5139 0.31 -4.34169
+  rotation 0 -1 0 -1.309
+}
+Pine {
+  translation -14.0083 0 14.4828
+  rotation 0 1 0 3.14159
+}
+Pine {
+  translation -19.6195 0 24.3783
+  rotation 0 1 0 2.87979
+  name "pine tree(1)"
+}
+Pine {
+  translation -22.0129 0 -6.20205
+  name "pine tree(3)"
+}
+Pine {
+  translation -10.6926 0 25.1339
+  name "pine tree(4)"
+}
+Pine {
+  translation -14.3441 0 -14.5621
+  name "pine tree(5)"
+}
+Pine {
+  translation -26.6328 0 7.1707
+  name "pine tree(6)"
+}
+Pine {
+  translation -9.37029 0 -14.0209
+  rotation 0 1 0 -2.618
+  name "pine tree(2)"
+}
+Forest {
+  translation 0 -0.01 0
+  shape [
+    200 200
+    200 0
+    50 0
+    50 50
+    -50 50
+    -50 -50
+    50 -50
+    50 0
+    200 0
+    200 -200
+    -200 -200
+    -200 200
+  ]
+  density 0.01
+  type "cherry tree"
+  randomSeed 1
+  maxHeight 12
+  minHeight 6
+  maxRadius 6
+  minRadius 3
+}
+Mavic2Pro {
+  translation 29 0.0944946 2
+  rotation 0.009137374883065782 -0.7070605859441594 -0.7070939373128214 -3.1230903043505
+  name "Mavic 2 PRO(1)"
+  controller "mavic2proPython"
+}
