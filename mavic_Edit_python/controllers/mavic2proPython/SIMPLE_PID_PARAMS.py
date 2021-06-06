@@ -32,3 +32,6 @@ yaw_Kd=float(5)
 
 yaw_setpoint=float(-0.99)
 altitude_attainment_factor=float(0.8)
+
+# LOGGING TRAJECTORY
+LOGGING_TIME_INTERVAL=0.2 #SECS

@@ -4,16 +4,45 @@ import mavic2proHelper
 from simple_pid import PID
 import csv
 import struct
-from  math import sin,cos,pi
+import time
+from  math import sin,cos,pi, sqrt
 from SIMPLE_PID_PARAMS import *
-
+from gitTrajs import *
 from helping_functions import frames
 from helping_functions import yawFix
+LOGGING_TIME_INTERVAL=2
+print("Points:",Points)
+TrajPoints=getTrajPoints()
+
+def getNextXY(xGPS,yGPS,t):
+    if (getNextXY.shouldLand==True):
+        print("LANDING")
+        return "LANDING"	
+    else:
+        threshold=0.1
+        xcurr,ycurr=getNextXY.currCoord
+        dist=sqrt( (xGPS-xcurr)**2 + (yGPS-ycurr)**2 )	
+        print("distance from curr point:",dist)
+        print("curr point:",getNextXY.currCoord)
+        if (dist<threshold):
+            if(getNextXY.index==len(TrajPoints)-1):
+                print("THIS IS THE END")
+                getNextXY.shouldLand=True
+                return [0,0]
+            getNextXY.index=getNextXY.index+1
+
+        getNextXY.currCoord=TrajPoints[getNextXY.index]		
+        return getNextXY.currCoord
+
+def drawTrajectory():
+    pass
+
+getNextXY.index=0
+getNextXY.currCoord=TrajPoints[getNextXY.index]#static variable
+getNextXY.shouldLand=False
 
 k_roll_p =10
 k_pitch_p=10
-
-
 
 TIME_STEP = QUADCOPTER_TIME_STEP
 TAKEOFF_THRESHOLD_VELOCITY = TAKEOFF_THRESHOLD_VELOCITY
@@ -48,9 +77,8 @@ yawPID = PID(yaw_Kp,yaw_Ki,yaw_Kd, setpoint=float(yaw_setpoint))
 
 targetX, targetY, target_altitude = 0.0	, 0.0, 1.0
 targetXWorld, targetYWorld = 1.0, 0.5
-print("testaki")
+trajLogs=[]
 while (robot.step(timestep) != -1):
-
 	led_state = int(robot.getTime()) % 2
 	front_left_led.set(led_state)
 	front_right_led.set(int(not(led_state)))
@@ -68,6 +96,14 @@ while (robot.step(timestep) != -1):
 	yGPS = gps.getValues()[0]
 	zGPS = gps.getValues()[1]
 
+	nextXY=getNextXY(xGPS,yGPS,69)
+	if (nextXY=="LANDING"):
+		drawActualvsDesiredTraj(trajLogs)
+		targetXWorld, targetYWorld=[0,0]
+	else:
+		targetXWorld, targetYWorld=nextXY
+  
+	print(targetXWorld, targetYWorld)	
 	#hardcoded
 	# yaw=-1
 	yawIMU = imu.getRollPitchYaw()[2]
@@ -93,17 +129,18 @@ while (robot.step(timestep) != -1):
 	print("======================================================================")
 	#marios
 	t=robot.getTime()
+	print("t:",t)
+	if(t//LOGGING_TIME_INTERVAL>len(trajLogs)):
+		trajLogs.append([xGPS,yGPS])
+	
 	f=pow(10,-0.1)
-	# targetX=sin(f*t)
-	# targetY=cos(f*t)
+
 	targetX=newCoords[1,0]
 	targetY=newCoords[0,0]
 
 	rollPID.setpoint  = targetX
 	pitchPID.setpoint = targetY
  
-	# roll_input  = k_roll_p  * roll + roll_acceleration + rollPID(xGPS)
-	# pitch_input = k_pitch_p * pitch - pitch_acceleration + pitchPID(-yGPS)
 	roll_input  = k_roll_p  * roll + roll_acceleration + rollPID(0)
 	pitch_input = k_pitch_p * pitch - pitch_acceleration + pitchPID(0)
 
