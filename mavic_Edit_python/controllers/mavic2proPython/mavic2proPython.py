@@ -1,4 +1,7 @@
+FOLLOW_CAR=1
+
 from numpy import sign
+from controller import Supervisor
 from controller import *
 import mavic2proHelper
 from simple_pid import PID
@@ -7,12 +10,15 @@ import struct
 import time
 from  math import sin,cos,pi, sqrt
 from SIMPLE_PID_PARAMS import *
-from gitTrajs import *
+if (not FOLLOW_CAR):
+    from gitTrajs import *
+    print("Points:",Points)
+    TrajPoints=getTrajPoints()
+
 from helping_functions import frames
 from helping_functions import yawFix
 LOGGING_TIME_INTERVAL=2
-print("Points:",Points)
-TrajPoints=getTrajPoints()
+
 
 def getNextXY(xGPS,yGPS,t):
     if (getNextXY.shouldLand==True):
@@ -33,13 +39,10 @@ def getNextXY(xGPS,yGPS,t):
 
         getNextXY.currCoord=TrajPoints[getNextXY.index]		
         return getNextXY.currCoord
-
-def drawTrajectory():
-    pass
-
-getNextXY.index=0
-getNextXY.currCoord=TrajPoints[getNextXY.index]#static variable
-getNextXY.shouldLand=False
+if (not FOLLOW_CAR):
+	getNextXY.index=0
+	getNextXY.currCoord=TrajPoints[getNextXY.index]#static variable
+	getNextXY.shouldLand=False
 
 k_roll_p =10
 k_pitch_p=10
@@ -48,7 +51,14 @@ TIME_STEP = QUADCOPTER_TIME_STEP
 TAKEOFF_THRESHOLD_VELOCITY = TAKEOFF_THRESHOLD_VELOCITY
 M_PI = 3.1415926535897932384626433
 
-robot = Robot()
+# robot = Robot()
+robot=Supervisor()
+if (FOLLOW_CAR):
+	car=robot.getFromDef("WEBOTS_VEHICLE0")
+	print("car:",car)
+	cargps=car.getPosition()
+
+	print("carGPS:",cargps)
 
 [frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor] = mavic2proHelper.getMotorAll(robot)
 
@@ -70,6 +80,15 @@ gyro.enable(TIME_STEP)
 
 yaw_setpoint=-1
 # yaw_setpoint=1
+if (FOLLOW_CAR):
+	pitch_Kp=float(2)
+	pitch_Ki=float(0)
+	pitch_Kd=float(2)
+
+	roll_Kp=float(2.2)
+	roll_Ki=float(0)
+	roll_Kd=float(2)
+	
 pitchPID = PID(pitch_Kp, pitch_Ki, pitch_Kd, setpoint=0.0)
 rollPID = PID(roll_Kp,roll_Ki,roll_Kd, setpoint=0.0)
 throttlePID = PID(throttle_Kp,throttle_Ki,throttle_Kd, setpoint=1)
@@ -96,14 +115,22 @@ while (robot.step(timestep) != -1):
 	yGPS = gps.getValues()[0]
 	zGPS = gps.getValues()[1]
 
-	nextXY=getNextXY(xGPS,yGPS,69)
-	if (nextXY=="LANDING"):
-		drawActualvsDesiredTraj(trajLogs)
-		targetXWorld, targetYWorld=[0,0]
+	if(FOLLOW_CAR):
+		cargps=car.getPosition()
+		xCar=cargps[2]
+		yCar=cargps[0]
+		zCar=cargps[1]
+		print("Car Coordinates:",xCar ,yCar+2)
+		targetXWorld, targetYWorld=[xCar ,yCar+2]
+		print("targetXWorld, targetYWorld:",targetXWorld, targetYWorld)
 	else:
-		targetXWorld, targetYWorld=nextXY
-  
-	print(targetXWorld, targetYWorld)	
+		nextXY=getNextXY(xGPS,yGPS,69)
+		if (nextXY=="LANDING"):
+			drawActualvsDesiredTraj(trajLogs)
+			targetXWorld, targetYWorld=[0,0]
+		else:
+			targetXWorld, targetYWorld=nextXY
+
 	#hardcoded
 	# yaw=-1
 	yawIMU = imu.getRollPitchYaw()[2]
@@ -121,15 +148,15 @@ while (robot.step(timestep) != -1):
 	vertical_input = throttlePID(zGPS)
 	yaw_input = yawPID(yaw_fixed)
 	
-	print("angular vel:",yaw_speed)
-	print("yaw fixed:",yaw_fixed)
-	print("yaw:",compass.getValues()[0],"yaw_IMU:",float(yawIMU)/pi)
+	# print("angular vel:",yaw_speed)
+	# print("yaw fixed:",yaw_fixed)
+	# print("yaw:",compass.getValues()[0],"yaw_IMU:",float(yawIMU)/pi)
 	# print("yaw_error:",yawPID.setpoint-yaw)
-	print("yaw_input:",yaw_input)
+	# print("yaw_input:",yaw_input)
 	print("======================================================================")
 	#marios
 	t=robot.getTime()
-	print("t:",t)
+	# print("t:",t)
 	if(t//LOGGING_TIME_INTERVAL>len(trajLogs)):
 		trajLogs.append([xGPS,yGPS])
 	

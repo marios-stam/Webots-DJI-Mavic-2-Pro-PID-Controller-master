@@ -22,7 +22,7 @@ def fixYaw(angle,angleIMU,vel):
                 
     dx=angleIMU-fixYaw.old_angle
     fixYaw.old_angle=angleIMU
-    print("dx:",dx)
+    #print("dx:",dx)
     return fixYaw.stathera + fixYaw.angleConstant*angle
 
     
